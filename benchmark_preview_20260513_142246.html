@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Benchmark Preview</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --card: #fffdfa;
+      --ink: #1c1a18;
+      --muted: #66615a;
+      --line: #d8d0c6;
+      --accent: #146356;
+      --accent-2: #f0e6d6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #efe6db 0, transparent 28%),
+        linear-gradient(180deg, #faf8f4 0%, var(--bg) 100%);
+    }
+    .wrap {
+      width: min(1440px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 40px;
+      line-height: 1;
+    }
+    .intro {
+      color: var(--muted);
+      margin-bottom: 26px;
+      font-size: 15px;
+    }
+    .bench {
+      margin: 28px 0 40px;
+    }
+    .shortlist {
+      background: rgba(255,253,250,0.92);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px 26px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+      margin: 12px 0 34px;
+    }
+    .shortlist h1,
+    .shortlist h2,
+    .shortlist h3 {
+      margin-top: 0;
+      color: var(--ink);
+    }
+    .shortlist table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 14px;
+    }
+    .shortlist th,
+    .shortlist td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+    .shortlist th {
+      background: #f4ede2;
+    }
+    .shortlist code {
+      background: #f3efe8;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.95em;
+    }
+    .shortlist ul {
+      padding-left: 22px;
+    }
+    .shortlist li {
+      margin: 6px 0;
+      line-height: 1.5;
+    }
+    .bench h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      border-left: 6px solid var(--accent);
+      padding-left: 12px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .badges span {
+      font-size: 12px;
+      color: var(--accent);
+      border: 1px solid #b8d2cd;
+      background: #edf7f4;
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+    .uid {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+    .media-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    figure {
+      margin: 0;
+      background: #f3ede5;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+    .img-wrap {
+      position: relative;
+    }
+    img {
+      width: 100%;
+      display: block;
+      background: #ece5da;
+      max-height: 420px;
+      object-fit: contain;
+    }
+    .bbox {
+      position: absolute;
+      border: 3px solid #ff3b30;
+      box-shadow: 0 0 0 9999px rgba(255, 59, 48, 0.08);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    figcaption {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 10px;
+      word-break: break-all;
+    }
+    .no-media {
+      border: 1px dashed #c5b8a5;
+      background: var(--accent-2);
+      color: #6f5d44;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .meta-inline {
+      margin-top: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      word-break: break-all;
+    }
+    .sec {
+      margin-top: 10px;
+    }
+    .sec-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .prompt {
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    .choices ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .choices li {
+      margin: 4px 0;
+      line-height: 1.45;
+    }
+    .answer > div {
+      margin: 6px 0;
+      line-height: 1.45;
+    }
+    .label {
+      display: inline-block;
+      min-width: 86px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      vertical-align: top;
+    }
+    pre {
+      white-space: pre-wrap;
+      margin: 8px 0 0;
+      padding: 12px;
+      background: #f7f4ef;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      max-height: 220px;
+      overflow: auto;
+      font-size: 12px;
+    }
+    @media (max-width: 720px) {
+      .wrap { width: min(100vw - 20px, 1440px); }
+      .cards { grid-template-columns: 1fr; }
+      h1 { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Benchmark Preview</h1>
+    <div class="intro">Generated at 2026-05-13 14:22:46. Each benchmark shows 2 samples from the current normalized data. Missing-media cards are intentional only when the chosen sample truly has no local image.</div>
+    <section class="shortlist">
+      <h1>视觉 Benchmark 推荐清单</h1>
+<h2>范围</h2>
+<p>这份清单从我们前面讨论过的 <code>Qwen</code> 和 <code>Seed</code> 报告截图中，挑出 10 个适合做视觉大模型综合评测的 benchmark。</p>
+<p>筛选约束如下：
+- 尽量覆盖主要视觉能力类别
+- 排除“长上下文文档理解”类 benchmark
+- 不包含 <code>ArcAGI1-Image</code>
+- 尽量减少能力重叠过高的 benchmark</p>
+<h2>推荐的 10 个 Benchmark</h2>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>能力类别</th>
+<th>选择原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MMMU</code></td>
+<td>综合多模态推理</td>
+<td>适合作为总盘 benchmark，覆盖学科广、任务类型杂，能反映模型整体视觉推理上限。</td>
+</tr>
+<tr>
+<td><code>RealWorldQA</code></td>
+<td>通用 VQA</td>
+<td>覆盖真实场景图片问答，比很多偏学术的数据集更接近日常使用场景。</td>
+</tr>
+<tr>
+<td><code>VLMsAreBlind</code></td>
+<td>感知与识别</td>
+<td>适合检验模型是不是“真的看见了”，能暴露依赖语言先验猜答案的问题。</td>
+</tr>
+<tr>
+<td><code>HallusionBench</code></td>
+<td>幻觉与忠实性</td>
+<td>用来测模型会不会凭空编造图中不存在的信息，这是视觉模型很关键的失效模式。</td>
+</tr>
+<tr>
+<td><code>OmniDocBench 1.5</code></td>
+<td>文档理解</td>
+<td>相比纯 OCR benchmark，更接近完整文档理解，而不只是识别文字。</td>
+</tr>
+<tr>
+<td><code>ChartQAPro</code></td>
+<td>图表理解</td>
+<td>图表理解和普通 VQA、文档 OCR 都不完全一样，值得单独覆盖。</td>
+</tr>
+<tr>
+<td><code>MathVista</code></td>
+<td>视觉数学推理</td>
+<td>是视觉数学里非常核心的 benchmark，适合覆盖图形、数学表达和题目理解。</td>
+</tr>
+<tr>
+<td><code>PhyX (openended)</code></td>
+<td>STEM 推理</td>
+<td>用来补足“数学之外的科学推理”，避免整套 benchmark 过度偏向 VQA 和 OCR。</td>
+</tr>
+<tr>
+<td><code>RefCOCO_avg</code></td>
+<td>空间定位与指代</td>
+<td>适合覆盖 spatial grounding，检验模型是否理解“哪个目标、哪个区域”。</td>
+</tr>
+<tr>
+<td><code>VisuLogic</code></td>
+<td>视觉谜题与抽象推理</td>
+<td>用来补足抽象视觉逻辑能力，同时满足“不使用 <code>ArcAGI1-Image</code>”这个约束。</td>
+</tr>
+</tbody>
+</table>
+<h2>选择逻辑</h2>
+<p>这 10 个 benchmark 分别覆盖不同维度：</p>
+<ul>
+<li><code>MMMU</code>：综合多模态能力总盘</li>
+<li><code>RealWorldQA</code>：自然图像问答</li>
+<li><code>VLMsAreBlind</code>：基础感知鲁棒性</li>
+<li><code>HallusionBench</code>：视觉幻觉控制</li>
+<li><code>OmniDocBench 1.5</code>：文档理解</li>
+<li><code>ChartQAPro</code>：图表理解</li>
+<li><code>MathVista</code>：视觉数学</li>
+<li><code>PhyX (openended)</code>：科学 / STEM 推理</li>
+<li><code>RefCOCO_avg</code>：空间 grounding</li>
+<li><code>VisuLogic</code>：抽象视觉逻辑</li>
+</ul>
+<h2>为什么没有优先选这些</h2>
+<ul>
+<li><code>MMMU-Pro</code>：很有价值，但和 <code>MMMU</code> 重叠较高；在 10 个名额里保留一个总盘 benchmark 就够了。</li>
+<li><code>SimpleVQA</code>、<code>MMStar</code>：都不错，但和 <code>RealWorldQA</code> 有一定重叠，所以把名额留给文档、空间和谜题类能力。</li>
+<li><code>OCRBench</code> / <code>OCRBenchv2</code>：如果重点是 OCR，它们很适合；但如果目标是“综合视觉能力”，<code>OmniDocBench 1.5</code> 提供的文档级信号更完整。</li>
+<li><code>DynaMath</code>：有价值，但和 <code>MathVista</code> 同属视觉数学；这里优先保留更核心的 <code>MathVista</code>。</li>
+<li><code>CountBench</code>：如果你特别关心 counting，可以纳入；这里只是优先了覆盖更广的 <code>RefCOCO_avg</code>。</li>
+<li><code>DUDE</code>、<code>MMLongBench</code>、<code>LongDocURL</code>、<code>MMLongBench-Doc</code>：属于长上下文文档理解，这次按要求排除，不视为核心视觉 benchmark。</li>
+<li><code>ArcAGI1-Image</code>：按你的要求明确排除。</li>
+</ul>
+<h2>可选替换方案</h2>
+<p>如果你更看重 OCR，而不是 STEM：
+- 用 <code>OCRBenchv2</code> 替换 <code>PhyX (openended)</code></p>
+<p>如果你更看重 counting，而不是抽象视觉逻辑：
+- 用 <code>CountBench</code> 替换 <code>VisuLogic</code></p>
+<p>如果你更希望和两份报告的公共 benchmark 重合更多：
+- 可以用 <code>SimpleVQA</code> 或 <code>MMStar</code> 替换 <code>OmniDocBench 1.5</code> 或 <code>VisuLogic</code></p>
+<h2>LongCat-Next 对齐对比</h2>
+<p>为了判断当前开源 VL 模型和 <code>LongCat-Next</code> 的相对位置，我只对齐它在论文截图里明确给出的 5 个同名 benchmark：<code>MMMU</code>、<code>MathVista</code>、<code>OCRBench</code>、<code>DocVQA</code>、<code>MMStar</code>。</p>
+<p>口径说明：
+- 只接受官方模型卡、官方仓库或技术报告里明确写出的同名 benchmark。
+- 不混入 <code>MMMU-Pro</code>、<code>MMMU-Val</code>、<code>V-Star</code> 之类近似但不同名的指标。
+- <code>OCRBench</code> 若官方按 1000 分制展示，则这里统一除以 10，改写成和 LongCat 表格一致的百分制口径。</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Release</th>
+<th>Params</th>
+<th>MMMU</th>
+<th>MathVista</th>
+<th>OCRBench</th>
+<th>DocVQA</th>
+<th>MMStar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LongCat-Next</code></td>
+<td>2026-03-29</td>
+<td>74B</td>
+<td><strong>70.6</strong></td>
+<td><strong>83.1</strong></td>
+<td><strong>86.5</strong></td>
+<td><strong>94.2</strong></td>
+<td><strong>69.3</strong></td>
+</tr>
+<tr>
+<td><code>Ovis2.6-30B-A3B</code></td>
+<td>2026-02-12</td>
+<td>30B total / ~3B active</td>
+<td>77.2</td>
+<td>86.0</td>
+<td>89.3</td>
+<td>96.7</td>
+<td>77.3</td>
+</tr>
+<tr>
+<td><code>Qwen3-VL-30B-A3B</code></td>
+<td>2025-10-11</td>
+<td>30B total / A3B</td>
+<td>76.4</td>
+<td>84.6</td>
+<td>90.5</td>
+<td>96.1</td>
+<td>74.5</td>
+</tr>
+<tr>
+<td><code>InternVL3.5-8B</code></td>
+<td>2025-08-25</td>
+<td>8B</td>
+<td>73.4</td>
+<td>74.2</td>
+<td>84.0</td>
+<td>92.3</td>
+<td>69.3</td>
+</tr>
+<tr>
+<td><code>Qwen3-VL-8B</code></td>
+<td>2025-10-11</td>
+<td>9B</td>
+<td>-</td>
+<td>77.2</td>
+<td>89.6</td>
+<td>96.1</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>Penguin-VL-8B</code></td>
+<td>2026-03-05</td>
+<td>8B</td>
+<td>-</td>
+<td>77.4</td>
+<td>85.2</td>
+<td>96.2</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3>结论</h3>
+<ul>
+<li><code>Ovis2.6-30B-A3B</code> 是目前最明确的强对手，在这 5 个同名 benchmark 上全部高于 <code>LongCat-Next</code>。</li>
+<li><code>Qwen3-VL-30B-A3B</code> 也在公开对齐表里 5 项全部高于 <code>LongCat-Next</code>。</li>
+<li><code>InternVL3.5-8B</code> 是更小参数量级里最稳的强基线之一：<code>MMMU</code> 高于 LongCat，<code>MMStar</code> 持平，但 <code>MathVista</code>、<code>OCRBench</code>、<code>DocVQA</code> 低于 LongCat。</li>
+<li><code>Qwen3-VL-8B</code> 和 <code>Penguin-VL-8B</code> 在已公开的同名项里很强，但官方页没有同时给全 <code>MMMU</code> 和 <code>MMStar</code>，所以这里只做部分对齐，不下完整总评。</li>
+</ul>
+<h3>来源</h3>
+<ul>
+<li><code>LongCat-Next</code>：论文截图 Table 3，以及模型卡 https://huggingface.co/meituan-longcat/LongCat-Next</li>
+<li><code>Ovis2.6-30B-A3B</code>：官方模型卡 https://huggingface.co/AIDC-AI/Ovis2.6-30B-A3B</li>
+<li><code>Qwen3-VL-30B-A3B</code>：官方模型卡 https://huggingface.co/Qwen/Qwen3-VL-30B-A3B-Instruct</li>
+<li><code>InternVL3.5-8B</code>：官方模型卡 https://huggingface.co/OpenGVLab/InternVL3_5-8B</li>
+<li><code>Qwen3-VL-8B</code>：官方模型卡 https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct</li>
+<li><code>Penguin-VL-8B</code>：官方模型卡 https://huggingface.co/tencent/Penguin-VL-8B</li>
+</ul>
+    </section>
+    <section class='bench'><h2>chartqapro</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>chartqapro</span></span><span><span>test</span></span><span><span>qa</span></span></div></div><div class='uid'>chartqapro_test_0</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/chartqapro/test/images/chartqapro_test_0.jpeg' loading='lazy' /></div><figcaption>data/raw/chartqapro/test/images/chartqapro_test_0.jpeg</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>estimate the year in which wind capacity first exceeds 100 gw based on the trend shown in the chart.</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>2037-38</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>chartqapro</span></span><span><span>test</span></span><span><span>qa</span></span></div></div><div class='uid'>chartqapro_test_1</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/chartqapro/test/images/chartqapro_test_1.jpeg' loading='lazy' /></div><figcaption>data/raw/chartqapro/test/images/chartqapro_test_1.jpeg</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>determine the airline with the highest increase in ghg emissions from 2008 to 2014</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>United Airlines</div></div></div></article></div></section><section class='bench'><h2>hallusionbench</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>hallusionbench</span></span><span><span>test</span></span><span><span>yes_no</span></span></div></div><div class='uid'>hallusionbench_test_4</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/hallusionbench/snapshot/data/VS/chart/0_1.png' loading='lazy' /></div><figcaption>data/raw/hallusionbench/snapshot/data/VS/chart/0_1.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Is China, Hongkong SAR, the leading importing country of gold, silverware, and jewelry with the highest import value in 2018?</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>0</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>hallusionbench</span></span><span><span>test</span></span><span><span>yes_no</span></span></div></div><div class='uid'>hallusionbench_test_5</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/hallusionbench/snapshot/data/VS/chart/0_1.png' loading='lazy' /></div><figcaption>data/raw/hallusionbench/snapshot/data/VS/chart/0_1.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Is Switzerland, the leading importing country of gold, silverware, and jewelry with the highest import value in 2018?</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>1</div></div></div></article></div></section><section class='bench'><h2>mathvista</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>mathvista</span></span><span><span>testmini</span></span><span><span>mixed_qa</span></span></div></div><div class='uid'>1</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/mathvista/testmini/images/1.png' loading='lazy' /></div><figcaption>data/raw/mathvista/testmini/images/1.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Hint: Please answer the question requiring a floating-point number with one decimal place and provide the final value, e.g., 1.2, 1.3, 1.4, at the end.
+Question: When a spring does work on an object, we cannot find the work by simply multiplying the spring force by the object&#x27;s displacement. The reason is that there is no one value for the force-it changes. However, we can split the displacement up into an infinite number of tiny parts and then approximate the force in each as being constant. Integration sums the work done in all those parts. Here we use the generic result of the integration.
+
+In Figure, a cumin canister of mass $m=0.40 \mathrm{~kg}$ slides across a horizontal frictionless counter with speed $v=0.50 \mathrm{~m} / \mathrm{s}$. It then runs into and compresses a spring of spring constant $k=750 \mathrm{~N} / \mathrm{m}$. When the canister is momentarily stopped by the spring, by what distance $d$ is the spring compressed?</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>1.2</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>mathvista</span></span><span><span>testmini</span></span><span><span>mixed_qa</span></span></div></div><div class='uid'>2</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/mathvista/testmini/images/2.png' loading='lazy' /></div><figcaption>data/raw/mathvista/testmini/images/2.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Hint: Please answer the question requiring an integer answer and provide the final value, e.g., 1, 2, 3, at the end.
+Question: what is the total volume of the measuring cup? (Unit: g)</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>1000</div></div></div></article></div></section><section class='bench'><h2>mmmu</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>mmmu</span></span><span><span>validation</span></span><span><span>multiple_choice</span></span><span><span>Accounting</span></span></div></div><div class='uid'>validation_Accounting_1</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/mmmu/validation/Accounting/images/validation_Accounting_1_1.png' loading='lazy' /></div><figcaption>data/raw/mmmu/validation/Accounting/images/validation_Accounting_1_1.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>&lt;image 1&gt; Baxter Company has a relevant range of production between 15,000 and 30,000 units. The following cost data represents average variable costs per unit for 25,000 units of production. If 30,000 units are produced, what are the per unit manufacturing overhead costs incurred?</div></div><div class='choices'><div class='sec-title'>Choices</div><ol><li><b>A.</b> $6</li><li><b>B.</b> $7</li><li><b>C.</b> $8</li><li><b>D.</b> $9</li></ol></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>choice</div><div><span class='label'>text</span>B</div><div><span class='label'>choice</span>B</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>mmmu</span></span><span><span>validation</span></span><span><span>multiple_choice</span></span><span><span>Accounting</span></span></div></div><div class='uid'>validation_Accounting_2</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/mmmu/validation/Accounting/images/validation_Accounting_2_1.png' loading='lazy' /></div><figcaption>data/raw/mmmu/validation/Accounting/images/validation_Accounting_2_1.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Assume accounts have normal balances, solve for the one missing account balance: Dividends. Equipment was recently purchased, so there is neither depreciation expense nor accumulated depreciation. &lt;image 1&gt;</div></div><div class='choices'><div class='sec-title'>Choices</div><ol><li><b>A.</b> $194,815</li><li><b>B.</b> $182,815</li><li><b>C.</b> $12,000</li><li><b>D.</b> $9,000</li></ol></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>choice</div><div><span class='label'>text</span>C</div><div><span class='label'>choice</span>C</div></div></div></article></div></section><section class='bench'><h2>omnidocbench</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>omnidocbench</span></span><span><span>train</span></span><span><span>document_parse</span></span></div></div><div class='uid'>omnidocbench_train_0</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/omnidocbench/snapshot/images/page-d1561665-5359-42fe-920c-d6e3bff81953.png' loading='lazy' /></div><figcaption>data/raw/omnidocbench/snapshot/images/page-d1561665-5359-42fe-920c-d6e3bff81953.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Parse this document page and return structured document elements, reading order, OCR text, formulas, and tables.</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>structured</div><div><span class='label'>structured</span><pre>{&quot;layout_dets&quot;: [{&quot;category_type&quot;: &quot;text_block&quot;, &quot;poly&quot;: [268.9431, 319.97520000000003, 322.9962, 319.97520000000003, 322.9962, 351.0839, 268.9431, 351.0839], &quot;ignore&quot;: false, &quot;order&quot;: 2, &quot;anno_id&quot;: &quot;box_id_0&quot;, &quot;attribute&quot;: {}, &quot;text&quot;: &quot;that&quot;}, {&quot;category_type&quot;: &quot;equation_isolated&quot;, &quot;poly&quot;: [404.98500000000007, 362.07719999999995, 816.9871826171875, 362.07719999999995, 816.9871826171875, 448.3244323730468, 404.98500000000007, 448.3244323730468], &quot;ignore&quot;: false, &quot;order&quot;: 3, &quot;anno_id&quot;: &quot;box_id_1&quot;, &quot;attribute&quot;: {}, &quot;latex&quot;: &quot;$$AB = \n\\left[\\begin{array}{ccc}\n2 &amp; 3 \\\\\n1 &amp; 4\n\\end{array}\\right]\n\\left[\\begin{array}{ccc}\n5 &amp; 2 &amp; 1 \\\\\n3 &amp; 8 &amp; 6\n\\end{array}\\right]$$&quot;}, {&quot;category_type&quot;: &quot;text_block&quot;, &quot;poly&quot;: [271.9185, 551.0684, 1379.9243999999999, 551.0684, 1379.9243999999999, 698.8932, 271.9185, 698.8932], &quot;ignore&quot;: false, &quot;order&quot;: 5, &quot;anno_id&quot;: &quot;box_id_2&quot;, &quot;attribute&quot;: {}, &quot;</pre></div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>omnidocbench</span></span><span><span>train</span></span><span><span>document_parse</span></span></div></div><div class='uid'>omnidocbench_train_1</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/omnidocbench/snapshot/images/page-bd6eb36e-0856-4d9d-b587-21b4a0209c8b.png' loading='lazy' /></div><figcaption>data/raw/omnidocbench/snapshot/images/page-bd6eb36e-0856-4d9d-b587-21b4a0209c8b.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Parse this document page and return structured document elements, reading order, OCR text, formulas, and tables.</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>structured</div><div><span class='label'>structured</span><pre>{&quot;layout_dets&quot;: [{&quot;category_type&quot;: &quot;text_block&quot;, &quot;poly&quot;: [249.9336, 311.087, 1353.9723000000001, 311.087, 1353.9723000000001, 395.0571, 249.9336, 395.0571], &quot;ignore&quot;: false, &quot;order&quot;: 2, &quot;anno_id&quot;: &quot;box_id_0&quot;, &quot;attribute&quot;: {}, &quot;text&quot;: &quot;The new elements are written $ {a}_{rc}^{\\left( 2\\right) } $ to indicate that this is the second time that a number has been stored in the matrix at location$(r,c)$. The result after step 2 is&quot;}, {&quot;category_type&quot;: &quot;equation_isolated&quot;, &quot;poly&quot;: [510.90763328324806, 414.8188673828124, 1090.8025512695312, 414.8188673828124, 1090.8025512695312, 759.7412109375, 510.90763328324806, 759.7412109375], &quot;ignore&quot;: false, &quot;order&quot;: 3, &quot;anno_id&quot;: &quot;box_id_1&quot;, &quot;attribute&quot;: {}, &quot;latex&quot;: &quot;$$\\left[\\begin{array}{cccc|c}a_{11}^{(1)} &amp; a_{12}^{(1)} &amp; a_{13}^{(1)}\\cdots &amp; a_{1N}^{(1)} &amp; a_{1,N+1}^{(1)}\\\\ 0 &amp; a_{22}^{(2)} &amp; a_{23}^{(2)}\\cdots &amp; a_{2N}^{(2)} &amp; a_{2,N+1}^{(2)}</pre></div></div></div></article></div></section><section class='bench'><h2>phyx_openended</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>phyx_openended</span></span><span><span>test_mini</span></span><span><span>multiple_choice</span></span></div></div><div class='uid'>0</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/phyx_openended/test_mini/images/0.png' loading='lazy' /></div><figcaption>data/raw/phyx_openended/test_mini/images/0.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Figure shows a refracted light beam in linseed oil making an angle of \( \phi = 20.0^{\circ} \) with the normal line \( NN&#x27; \). The index of refraction of linseed oil is 1.48.</div></div><div class='choices'><div class='sec-title'>Choices</div><ol><li><b>A.</b> A: \( 28.5^{\circ} \)</li><li><b>B.</b> B: \(  30.4^{\circ} \)</li><li><b>C.</b> C: \( 22.3^{\circ} \)</li><li><b>D.</b> D: \( 31.1^{\circ} \)</li></ol></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>choice</div><div><span class='label'>text</span>C</div><div><span class='label'>choice</span>C</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>phyx_openended</span></span><span><span>test_mini</span></span><span><span>multiple_choice</span></span></div></div><div class='uid'>1</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/phyx_openended/test_mini/images/1.png' loading='lazy' /></div><figcaption>data/raw/phyx_openended/test_mini/images/1.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>A ray of light travels into another medium, making an angle of \( \theta_1 = 45.0^{\circ} \) with the normal as in figure.</div></div><div class='choices'><div class='sec-title'>Choices</div><ol><li><b>A.</b> A: \( 22.7^{\circ} \)</li><li><b>B.</b> B: \( 31.4^{\circ} \)</li><li><b>C.</b> C: \( 32.0^{\circ} \)</li><li><b>D.</b> D: \( 33.5^{\circ} \)</li></ol></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>choice</div><div><span class='label'>text</span>C</div><div><span class='label'>choice</span>C</div></div></div></article></div></section><section class='bench'><h2>realworldqa</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>realworldqa</span></span><span><span>test</span></span><span><span>qa</span></span></div></div><div class='uid'>realworldqa_test_0</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/realworldqa/test/images/realworldqa_test_0.png' loading='lazy' /></div><figcaption>data/raw/realworldqa/test/images/realworldqa_test_0.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Which of the 3 objects is the smallest?
+A. The object on the right is the smallest object.
+B. The object on the left is the smallest object.
+C. The object in the middle is the smallest object.
+Please answer directly with only the letter of the correct option and nothing else.</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>C</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>realworldqa</span></span><span><span>test</span></span><span><span>qa</span></span></div></div><div class='uid'>realworldqa_test_1</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/realworldqa/test/images/realworldqa_test_1.png' loading='lazy' /></div><figcaption>data/raw/realworldqa/test/images/realworldqa_test_1.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Is the closest red car to us closer than the closest semi truck?
+Please answer directly with a single word or number.</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>Yes</div></div></div></article></div></section><section class='bench'><h2>refcoco_avg</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>refcoco_avg</span></span><span><span>val</span></span><span><span>grounding</span></span></div></div><div class='uid'>1537681</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/refcoco_avg/val/images/1537681.png' loading='lazy' /><div class='bbox' style='left:73.1719%;top:0.2126%;width:26.8281%;height:27.1308%;'></div></div><figcaption>data/raw/refcoco_avg/val/images/1537681.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Please carefully observe the area circled in the image and come up with a caption for the area.</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>bbox</div><div><span class='label'>text</span>bowl behind the others can only see part</div><div><span class='label'>bbox</span>[468.29998779296875, 0.9100000262260437, 171.6999969482422, 116.12000274658203]</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>refcoco_avg</span></span><span><span>val</span></span><span><span>grounding</span></span></div></div><div class='uid'>710706</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/refcoco_avg/val/images/710706.png' loading='lazy' /><div class='bbox' style='left:23.7438%;top:32.5841%;width:71.0828%;height:66.2921%;'></div></div><figcaption>data/raw/refcoco_avg/val/images/710706.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Please carefully observe the area circled in the image and come up with a caption for the area.</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>bbox</div><div><span class='label'>text</span>front bowl w/carrots in it</div><div><span class='label'>bbox</span>[151.9600067138672, 139.4600067138672, 454.92999267578125, 283.7300109863281]</div></div></div></article></div></section><section class='bench'><h2>visulogic</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>visulogic</span></span><span><span>test</span></span><span><span>multiple_choice</span></span></div></div><div class='uid'>00000</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/visulogic/test/images/00000.png' loading='lazy' /></div><figcaption>data/raw/visulogic/test/images/00000.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>From the four given options, select the most suitable one to fill in the question mark, so that a certain regularity is presented:
+
+
+
+A: A  
+B: B  
+C: C  
+D: D</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>A</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>visulogic</span></span><span><span>test</span></span><span><span>multiple_choice</span></span></div></div><div class='uid'>00001</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/visulogic/test/images/00001.png' loading='lazy' /></div><figcaption>data/raw/visulogic/test/images/00001.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>From the four given options, choose the most suitable one to fill in the question mark, so that it presents a certain regularity:
+
+
+A: A
+B: B
+C: C
+D: D</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>D</div></div></div></article></div></section><section class='bench'><h2>vlmsareblind</h2><div class='cards'><article class='card'><div class='card-head'><h3>Sample 1</h3><div class='badges'><span><span>vlmsareblind</span></span><span><span>valid</span></span><span><span>qa</span></span></div></div><div class='uid'>vlmsareblind_valid_0</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/vlmsareblind/valid/images/vlmsareblind_valid_0.png' loading='lazy' /></div><figcaption>data/raw/vlmsareblind/valid/images/vlmsareblind_valid_0.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>How many single-color paths go from C to A? Answer with a number in curly brackets e.g. {3}</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>1</div></div></div></article><article class='card'><div class='card-head'><h3>Sample 2</h3><div class='badges'><span><span>vlmsareblind</span></span><span><span>valid</span></span><span><span>qa</span></span></div></div><div class='uid'>vlmsareblind_valid_1</div><div class='media-grid'><figure><div class='img-wrap'><img src='data/raw/vlmsareblind/valid/images/vlmsareblind_valid_1.png' loading='lazy' /></div><figcaption>data/raw/vlmsareblind/valid/images/vlmsareblind_valid_1.png</figcaption></figure></div><div class='sec'><div class='sec-title'>Prompt</div><div class='prompt'>Count the one-colored routes that go from C to A. Answer with a number in curly brackets e.g. {3}</div></div><div class='sec'><div class='sec-title'>Answer</div><div class='answer'><div><span class='label'>type</span>text</div><div><span class='label'>text</span>1</div></div></div></article></div></section>
+  </div>
+</body>
+</html>

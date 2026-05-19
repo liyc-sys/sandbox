@@ -1,0 +1,169 @@
+{
+  "schema_version": "v1",
+  "benchmarks": {
+    "mmmu": {
+      "display_name": "MMMU",
+      "category": "multimodal_reasoning",
+      "source_type": "hf_dataset",
+      "dataset_id": "MMMU/MMMU",
+      "preferred_configs": [
+        "Accounting",
+        "Agriculture",
+        "Architecture_and_Engineering",
+        "Art",
+        "Art_Theory",
+        "Basic_Medical_Science",
+        "Biology",
+        "Chemistry",
+        "Clinical_Medicine",
+        "Computer_Science",
+        "Design",
+        "Diagnostics_and_Laboratory_Medicine",
+        "Economics",
+        "Electronics",
+        "Energy_and_Power",
+        "Finance",
+        "Geography",
+        "History",
+        "Literature",
+        "Manage",
+        "Marketing",
+        "Materials",
+        "Math",
+        "Mechanical_Engineering",
+        "Music",
+        "Pharmacy",
+        "Physics",
+        "Psychology",
+        "Public_Health",
+        "Sociology"
+      ],
+      "preferred_split": "validation",
+      "task_type": "multiple_choice",
+      "license": "apache-2.0"
+    },
+    "realworldqa": {
+      "display_name": "RealWorldQA",
+      "category": "general_vqa",
+      "source_type": "hf_dataset",
+      "dataset_id": "xai-org/RealworldQA",
+      "preferred_split": "test",
+      "task_type": "qa",
+      "license": "cc-by-nd-4.0"
+    },
+    "vlmsareblind": {
+      "display_name": "VLMsAreBlind",
+      "category": "perception_recognition",
+      "source_type": "hf_dataset",
+      "dataset_id": "XAI/vlmsareblind",
+      "preferred_split": "valid",
+      "task_type": "qa",
+      "license": "mit"
+    },
+    "hallusionbench": {
+      "display_name": "HallusionBench",
+      "category": "hallucination_faithfulness",
+      "source_type": "hf_snapshot",
+      "repo_id": "rayguan/HallusionBench",
+      "annotation_file_candidates": [
+        "HallusionBench.json",
+        "hallusionbench.json"
+      ],
+      "image_archive_candidates": [
+        "hallusion_bench.zip",
+        "hallusionbench.zip"
+      ],
+      "preferred_split": "test",
+      "task_type": "yes_no",
+      "license": "bsd-3-clause"
+    },
+    "omnidocbench": {
+      "display_name": "OmniDocBench",
+      "category": "document_understanding",
+      "source_type": "hf_snapshot",
+      "repo_id": "opendatalab/OmniDocBench",
+      "annotation_file_candidates": [
+        "OmniDocBench.json"
+      ],
+      "preferred_split": "train",
+      "task_type": "document_parse",
+      "license": "unknown"
+    },
+    "chartqapro": {
+      "display_name": "ChartQAPro",
+      "category": "chart_understanding",
+      "source_type": "hf_dataset",
+      "dataset_id": "ahmed-masry/ChartQAPro",
+      "preferred_split": "test",
+      "task_type": "qa",
+      "license": "mit"
+    },
+    "mathvista": {
+      "display_name": "MathVista",
+      "category": "visual_math",
+      "source_type": "hf_dataset",
+      "dataset_id": "AI4Math/MathVista",
+      "preferred_split": "testmini",
+      "task_type": "mixed_qa",
+      "license": "cc-by-sa-4.0"
+    },
+    "phyx_openended": {
+      "display_name": "PhyX (openended)",
+      "category": "stem_reasoning",
+      "source_type": "hf_dataset",
+      "dataset_id": "Cloudriver/PhyX",
+      "preferred_configs": [
+        "default"
+      ],
+      "preferred_split": "test_mini",
+      "task_type": "multiple_choice",
+      "license": "mit",
+      "note": "公开 HF 仓默认配置可能同时包含多种评测形式，当前脚本优先保留 open-ended 相关字段并兼容 options。"
+    },
+    "babyvision": {
+      "display_name": "BabyVision",
+      "category": "early_visual_reasoning",
+      "source_type": "hf_dataset",
+      "dataset_id": "UnipatAI/BabyVision",
+      "preferred_split": "train",
+      "task_type": "mixed_qa",
+      "license": "unknown",
+      "note": "包含多选和填空题；字段包括 question/options/choiceAns/blankAns。"
+    },
+    "countbench": {
+      "display_name": "CountBenchQA",
+      "category": "visual_counting",
+      "source_type": "hf_dataset",
+      "dataset_id": "vikhyatk/CountBenchQA",
+      "preferred_split": "test",
+      "task_type": "qa",
+      "license": "unknown",
+      "note": "CountBench 的 QA 版本；字段包括 image/text/question/number，主指标按整数计数 accuracy。"
+    },
+    "refcoco_avg": {
+      "display_name": "RefCOCO_avg",
+      "category": "spatial_grounding",
+      "source_type": "hf_dataset",
+      "task_type": "grounding",
+      "license": "unknown",
+      "note": "标准 grounding 评测：8 split (RefCOCO val/testA/testB + RefCOCO+ val/testA/testB + RefCOCOg val/test)，主指标 Acc@0.5。",
+      "subdatasets": [
+        {"dataset_id": "lmms-lab/RefCOCO",     "splits": ["val", "testA", "testB"], "split_alias_prefix": "refcoco"},
+        {"dataset_id": "lmms-lab/RefCOCOplus", "splits": ["val", "testA", "testB"], "split_alias_prefix": "refcoco+"},
+        {"dataset_id": "lmms-lab/RefCOCOg",    "splits": ["val", "test"],            "split_alias_prefix": "refcocog"}
+      ],
+      "preferred_split": "val"
+    },
+    "visulogic": {
+      "display_name": "VisuLogic",
+      "category": "visual_logic",
+      "source_type": "hf_dataset",
+      "dataset_id": "lscpku/VisuLogic",
+      "preferred_split": "test",
+      "task_type": "multiple_choice",
+      "license": "apache-2.0",
+      "status": "sample_source_available",
+      "note": "原始仓 VisuLogic/VisuLogic 当前 viewer 只暴露 image；sample 阶段改用 lscpku/VisuLogic 这个公开镜像。"
+    }
+  }
+}
