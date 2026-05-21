@@ -8,7 +8,7 @@ from pathlib import Path
 import markdown
 
 
-ROOT = Path("/Users/liyc/Desktop/nativeMLLM/evaluate_framework")
+ROOT = Path(__file__).resolve().parents[1]
 NORMALIZED = ROOT / "data" / "normalized"
 OUTPUT = ROOT / "benchmark_preview.html"
 SHORTLIST_MD = ROOT / "visual-benchmark-shortlist.md"

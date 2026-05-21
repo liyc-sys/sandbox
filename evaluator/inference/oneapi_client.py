@@ -1,6 +1,6 @@
 """推理 client：把 unified sample 转成 oneapi 多模态 message 并调用。
 
-依赖外部 oneapi.py：/Users/liyc/Desktop/oneapi.py
+依赖外部 oneapi.py。默认从当前环境导入；如需指定目录，设置 ONEAPI_DIR。
 """
 from __future__ import annotations
 import os
@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any
 
 # 让 import oneapi 可用
-ONEAPI_DIR = "/Users/liyc/Desktop"
-if ONEAPI_DIR not in sys.path:
+ONEAPI_DIR = os.environ.get("ONEAPI_DIR")
+if ONEAPI_DIR and ONEAPI_DIR not in sys.path:
     sys.path.insert(0, ONEAPI_DIR)
 
 import oneapi  # noqa: E402

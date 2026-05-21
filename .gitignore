@@ -1,12 +1,33 @@
 .DS_Store
+.venv/
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
 
-.venv/
-venv/
-
-data/
+data/raw/
+data/normalized/*
+!data/normalized/refcoco_avg/
+data/normalized/refcoco_avg/*
+!data/normalized/refcoco_avg/all8.sample_per_split_5.jsonl
 assets/output/
 assets/log/
+assets/logs/
 
+*.log
 *.zip
+*.tar
+*.tar.gz
+*.tgz
+*.pdf
+*.aux
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.tmp
+*~

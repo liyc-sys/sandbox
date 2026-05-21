@@ -1,0 +1,65 @@
+{
+  "schema_version": "v1",
+  "family": "generation",
+  "output_root": "assets/output/generation",
+  "benchmarks": {
+    "dpg_bench": {
+      "display_name": "DPG Bench",
+      "category": "text_to_image_alignment",
+      "source_type": "local_or_torchumm",
+      "reference": "TorchUMM eval/generation/dpg_bench",
+      "prompts_dir": "benchmarks/generation/dpg_bench/prompts",
+      "metadata_path": "benchmarks/generation/dpg_bench/dpg_bench.csv",
+      "images_per_prompt": 4,
+      "output_layout": {
+        "images": "images/<prompt_id>.png",
+        "score": "final_score.json"
+      },
+      "scorer_note": "Official scoring uses DPG/mPLUG VQA. Set scorer_command or copy final_score.json into the run dir."
+    },
+    "geneval": {
+      "display_name": "GenEval",
+      "category": "text_to_image_compositionality",
+      "source_type": "local_or_torchumm",
+      "reference": "TorchUMM eval/generation/geneval",
+      "metadata_path": "benchmarks/generation/geneval/evaluation_metadata.jsonl",
+      "images_per_prompt": 4,
+      "output_layout": {
+        "images": "images/<00000>/samples/<00000>.png",
+        "metadata": "images/<00000>/metadata.jsonl",
+        "score_inputs": "results.jsonl",
+        "score": "score_summary.json"
+      },
+      "scorer_note": "Official scoring uses GenEval evaluate_images.py plus summary_scores.py. Set scorer_command or copy results.jsonl/score_summary.json into the run dir."
+    },
+    "wise": {
+      "display_name": "WISE",
+      "category": "text_to_image_vlm_judge",
+      "source_type": "local_or_torchumm",
+      "reference": "TorchUMM eval/generation/wise",
+      "data_root": "benchmarks/generation/wise/data",
+      "images_per_prompt": 1,
+      "output_layout": {
+        "images": "images/<prompt_id>.png",
+        "score_files": "Results/*_scores.jsonl",
+        "score": "summary.json"
+      },
+      "scorer_note": "The framework can aggregate WISE *_scores.jsonl directly. Run/copy a VLM scorer first."
+    },
+    "ueval": {
+      "display_name": "UEval",
+      "category": "unified_generation_rubric_eval",
+      "source_type": "hf_dataset_or_local_source",
+      "hf_dataset": "zlab-princeton/UEval",
+      "local_cache": "benchmarks/generation/ueval/data",
+      "domains": "all",
+      "images_per_prompt": 1,
+      "output_layout": {
+        "model_outputs": "model_outputs.json",
+        "score": "eval_results.json",
+        "summary": "eval_summary.json"
+      },
+      "scorer_note": "UEval can load local JSON/JSONL/Parquet, datasets.load_from_disk directories, or a Hugging Face dataset. TorchUMM scoring uses Qwen text/VL judge models and can consume the same local data source."
+    }
+  }
+}
