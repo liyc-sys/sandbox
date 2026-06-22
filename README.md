@@ -10,6 +10,17 @@ Preference Routing for OpenClaw-Style Agent Learning"** (under review).
 
 ---
 
+![Overview of HPR](figures/gemini_hpr_overview.png)
+
+*Overview of HPR. OpenClaw-style interactions produce next-state feedback logs
+during deployment. After logging, HPR compiles the feedback into static offline
+artifacts: local feedback becomes pairwise local artifacts, while delayed or
+aggregate outcomes become scalar outcome artifacts. The offline trainer updates
+the policy from these reusable records without environment replay during the
+update.*
+
+---
+
 ## Overview
 
 Agent interaction logs contain supervision beyond final rewards: user replies,
