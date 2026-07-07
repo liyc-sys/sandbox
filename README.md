@@ -1,127 +1,209 @@
-# Offline Hindsight Preference Routing (HPR)
+<div align="center">
 
-Companion code release for the paper **"Offline Hindsight Preference Routing
-for OpenClaw-Style Agent Learning"** (under review).
+# Offline Hindsight Preference Routing<br/>for OpenClaw-Style Agent Learning
 
-HPR is a typed offline interface for next-state agent feedback. Each logged
-feedback instance `x_t = (s_t, a_t, o_{t+1}, h_{<=t})` is routed by the
-supervision it can validly support:
+**Companion code release** &nbsp;·&nbsp; paper under double-blind review
 
-| Feedback instance                | Routed to                    | Artifact |
-| -------------------------------- | ---------------------------- | -------- |
-| context-supported preference     | pairwise HPR branch          | `(s_t, a_t^+, a_t)` |
-| local correction                 | pairwise HPR branch          | `(s_t, a_t^+, a_t)` |
-| local tool/API outcome           | scalar branch                | `(s_t, a_t, y_t)` |
-| delayed trajectory outcome       | scalar branch                | `(s_t, a_t, y_t)` |
-| newly revealed / neutral         | no update (logged only)      | neutral log |
+<img src="https://img.shields.io/badge/paper-under%20review-b31b1b" alt="Paper: under review">
+<img src="https://img.shields.io/badge/python-3.8%2B-3776ab" alt="Python 3.8+">
+<img src="https://img.shields.io/badge/pytorch-2.1%2B-ee4c2c" alt="PyTorch 2.1+">
+<img src="https://img.shields.io/badge/smoke%20test-passing-2ea44f" alt="Smoke test: passing">
 
-Pairwise artifacts feed a DPO-style loss; scalar artifacts feed a KTO-style
-loss; neutral logs never update the policy.
+<br/><br/>
 
-## Layout
+<img src="figures/gemini_hpr_overview.png" width="88%" alt="Overview of HPR">
 
+<em>Overview of HPR. OpenClaw-style interactions produce next-state feedback logs
+during deployment. After logging, HPR compiles the feedback into static offline
+artifacts: local feedback becomes pairwise local artifacts, while delayed or
+aggregate outcomes become scalar outcome artifacts. The offline trainer updates
+the policy from these reusable records without environment replay during the
+update.</em>
+
+</div>
+
+---
+
+## Overview
+
+Agent interaction logs contain supervision beyond final rewards: user replies,
+tool outputs, state transitions, and test verdicts are all *next-state*
+observations that can be used to post-train agents. This work studies the
+**offline learning interface** for such signals — given a logged feedback
+instance, *what training artifact should it become?*
+
+The key observation is that next-state feedback is **heterogeneous in its
+evidence structure**, and the right unit of analysis is the *feedback
+instance*, not the task:
+
+- **Local, comparative feedback** (e.g. a user correction) can justify a
+  pairwise *chosen / rejected* preference, since the preferred behavior was
+  inferable from the pre-feedback context.
+- **Outcome-only feedback** (e.g. a delayed task verdict or test failure)
+  provides only a scalar *desirable / undesirable* label, without a reliable
+  alternative response.
+- **Newly revealed or ambiguous feedback** (e.g. a preference the agent could
+  not have anticipated) should be logged but *not* used to penalize an earlier
+  action.
+
+A single trajectory can contain all three.
+
+## Method
+
+Hindsight Preference Routing (HPR) is a **typed offline interface** that
+routes each feedback instance to the supervision it can validly support:
+
+```mermaid
+flowchart LR
+    L["Interaction logs<br/>(next-state feedback)"] --> R{"HPR Router<br/>(frozen, prompt-based)"}
+    R -- "context-supported preference<br/>or local correction" --> P["Pairwise artifact<br/>(s, a+, a-)"]
+    R -- "tool / delayed outcome" --> S["Scalar artifact<br/>(s, a, +1/-1)"]
+    R -- "newly revealed / neutral" --> N["Neutral log<br/>(audit only)"]
+    P -- "DPO-style loss" --> T["Offline routed trainer"]
+    S -- "KTO-style loss" --> T
+    T --> U["Updated policy"]
+    classDef muted fill:#f2f2f2,stroke:#bbb,color:#888;
+    class N muted;
 ```
-hpr/
-  types.py       feedback instance + artifact schemas (paper Table 6)
-  llm.py         OpenAI-compatible backend + deterministic mock backend
-  router.py      frozen prompt-based feedback router (paper §3.1, App. B)
-  regenerate.py  hindsight regeneration a_t^+ ~ pi(. | s_t (+) u_t) (paper §3.3)
-  compile.py     feedback instances -> pairwise/scalar/neutral artifacts
-  losses.py      pairwise HPR loss + scalar KTO-style loss (paper §3.4, §3.5)
-  train.py       offline routed trainer over compiled artifacts
-  metrics.py     router diagnostics: type acc, local F1, delayed F1, delayed->HPR
-scripts/
-  route_feedback.py      CLI: label feedback instances with the router
-  compile_artifacts.py   CLI: compile routed instances into artifacts
-  train_routed.py        CLI: routed offline training from artifacts
-  router_diagnostics.py  CLI: score router labels against gold labels
-tests/
-  test_pipeline.py       end-to-end smoke test (mock LLM + tiny random model)
-examples/
-  toy_feedback_instances.jsonl  six instances covering all five feedback types
-benchmarks/
-  README.md              data splits used in the paper: rebuild + verify
-  data/split_manifest.json          canonical split definition (all settings)
-  data/splits/tau3_reported_test_clean89_manifest.json
-                          fixed 89-task tau3 evaluation set (ids listed)
-  data/scripts/           materialize official data + split integrity check
-```
 
-## Method-to-code map
+| Feedback instance | Routed to | Objective |
+| --- | --- | --- |
+| Context-supported preference / local correction | pairwise HPR artifact | DPO-style |
+| Local tool outcome | scalar / verifier | KTO-style |
+| Delayed trajectory outcome | scalar outcome artifact | KTO-style |
+| Newly revealed preference / neutral context | no update | — |
 
-| Paper | Code |
-| ----- | ---- |
-| Eq. (1)-(2) router `R(x_t)` | `hpr/router.py` |
-| §3.3 hindsight regeneration `a_t^+ ~ pi(. \| s_t (+) u_t)` | `hpr/regenerate.py` |
-| §3.3 pair construction `D_pair = {(s_t, a_t^+, a_t)}` | `hpr/compile.py` |
-| §3.4 scalar loss `-log sigma(alpha * y_t * rho_theta)` | `hpr/losses.py:kto_scalar_loss` |
-| §3.5 pairwise loss `-log sigma(alpha * d_t)` | `hpr/losses.py:dpo_pair_loss` |
-| §3.5 routed objective `L_route` | `hpr/train.py:RoutedTrainer` |
-| Table 3 router diagnostics | `hpr/metrics.py` |
-| Table 7 router output schema | `hpr/types.py:RouterDecision` |
-
-Only response/action tokens of the routed instance are scored; context tokens
-are masked (`hpr/losses.py:encode_with_response_mask`). The reference policy is
-a frozen copy of the initial policy whose log-probabilities are precomputed
-once before training (`hpr/train.py:precompute_reference`).
+The local branch regenerates an improved response under a training-time
+enhanced context `a+ ~ pi(. | s (+) u)` — the hindsight hint `u` is never part
+of the deployment prompt. Because all artifacts are static and offline, they
+can be inspected, filtered, mixed across data sources, and reused for
+retraining **without** policy-versioned rollouts, old log-probabilities, or
+objective-specific replay state.
 
 ## Quickstart
 
-Route, compile, and smoke-train on the bundled toy data without any API key or
-GPU (uses the deterministic mock backend and a tiny random model):
+Run the full pipeline offline — no API key or GPU required (deterministic mock
+backend + tiny random model):
 
 ```bash
+pip install -r requirements.txt
 python3 -m tests.test_pipeline
 ```
 
-With a real OpenAI-compatible endpoint (router and regeneration default to the
-same-scale Qwen3-4B backbone used in the paper):
+With a real OpenAI-compatible endpoint (the paper uses the same-scale Qwen3-4B
+backbone for router, interpreter, and regeneration):
 
 ```bash
 export HPR_API_KEY=...
 export HPR_BASE_URL=...   # OpenAI-compatible /v1 endpoint
 
 python3 scripts/route_feedback.py \
-  --input feedback_instances.jsonl \
-  --output routed.jsonl \
-  --provider openai --model qwen3-4b \
-  --preserve-structural-labels
+  --input feedback_instances.jsonl --output routed.jsonl \
+  --provider openai --model qwen3-4b --preserve-structural-labels
 
 python3 scripts/compile_artifacts.py \
-  --routed routed.jsonl \
-  --output-dir artifacts/ \
+  --routed routed.jsonl --output-dir artifacts/ \
   --provider openai --regen-model qwen3-4b
 
 python3 scripts/train_routed.py \
-  --model-path Qwen/Qwen3-4B \
-  --artifacts-dir artifacts/ \
+  --model-path Qwen/Qwen3-4B --artifacts-dir artifacts/ \
   --output-dir ckpt/hpr_routed
-
-python3 scripts/router_diagnostics.py \
-  --routed routed.jsonl --gold-field gold_feedback_type
 ```
 
-## Default hyperparameters (paper Table 8)
+## Repository Layout
+
+```
+hpr/            method implementation (router, regeneration, compiler, losses, trainer)
+scripts/        CLI entry points for routing, compilation, training, diagnostics
+benchmarks/     data splits, evaluation manifests, and experiment pipeline scripts
+examples/       toy feedback instances covering all five feedback types
+tests/          end-to-end offline smoke test
+figures/        overview figure
+```
+
+### Method-to-code map
+
+| Paper | Code |
+| --- | --- |
+| Router `R(x_t)` (Sec. 3.1, App. B) | `hpr/router.py` |
+| Hindsight regeneration `a+ ~ pi(. \| s (+) u)` (Sec. 3.3) | `hpr/regenerate.py` |
+| Pair construction `D_pair` (Sec. 3.3) | `hpr/compile.py` |
+| Scalar loss `-log sigma(alpha y rho)` (Sec. 3.4) | `hpr/losses.py` |
+| Pairwise loss `-log sigma(alpha d)` (Sec. 3.5) | `hpr/losses.py` |
+| Routed objective `L_route` (Sec. 3.5) | `hpr/train.py` |
+| Router diagnostics (Table 3) | `hpr/metrics.py` |
+| Artifact schemas (Table 6, Table 7) | `hpr/types.py` |
+
+Only response/action tokens of the routed instance are scored; context tokens
+are masked. The reference policy is a frozen copy of the initial policy whose
+log-probabilities are precomputed once before training.
+
+## Experiments
+
+`benchmarks/` pins the exact data splits used in the paper (including the
+fixed 89-task tau3 evaluation manifest with all task ids listed) and ships the
+pipeline scripts for the three evaluation settings. Original benchmark data is
+not redistributed; it is rebuilt from the official sources and verified
+against the manifests:
+
+```bash
+cd benchmarks
+git clone https://github.com/sierra-research/tau2-bench vendor/tau2-bench
+python3 data/scripts/materialize_tau3_bench.py
+python3 data/scripts/materialize_swe_lite.py      # pip install datasets
+python3 data/scripts/check_split_integrity.py
+```
+
+See `benchmarks/README.md` for the per-setting execution order.
+
+<details>
+<summary><b>Default hyperparameters (paper Table 8)</b></summary>
 
 | Parameter | Value |
-| --------- | ----- |
+| --- | --- |
 | DPO / KTO beta (`alpha` in the paper) | 0.1 |
 | KTO desirable / undesirable weights | 1.0 / 1.0 |
-| learning rate | 1e-5 |
-| training batch size (grad-accum micro-batches) | 16 |
-| max sequence length | 8192 |
-| hint regeneration temperature | 0.7 |
-| hint candidates for rejection sampling | 4 |
-| router confidence threshold | 0.65 |
+| Learning rate | 1e-5 |
+| Training batch size (grad-accum micro-batches) | 16 |
+| Max sequence length | 8192 |
+| Hint regeneration temperature | 0.7 |
+| Hint candidates for rejection sampling | 4 |
+| Router confidence threshold | 0.65 |
 
-## Notes
+</details>
 
-- The router, interpreter, and regeneration generator are *artifact
-  constructors*, not teachers: the paper uses the same-scale Qwen3-4B backbone
-  for all three and keeps them frozen across compared methods.
-- Compiled artifacts are static JSONL records. They can be cached, audited,
-  filtered, and reused across later updates without policy-versioned rollouts,
-  old log-probabilities, or environment replay state.
-- `Pairwise-Only` and `Scalar-Only` baselines from the paper are recovered by
-  forcing all non-neutral types into one branch (see
-  `scripts/compile_artifacts.py --force-branch`).
+<details>
+<summary><b>Baseline compilation modes</b></summary>
+
+The single-objective baselines from the paper are recovered by forcing all
+non-neutral feedback into one branch:
+
+```bash
+python3 scripts/compile_artifacts.py --routed routed.jsonl --output-dir artifacts_scalar/ --force-branch scalar     # Scalar-Only
+python3 scripts/compile_artifacts.py --routed routed.jsonl --output-dir artifacts_pair/   --force-branch pairwise   # Pairwise-Only
+```
+
+</details>
+
+## Results
+
+HPR is evaluated in three complementary settings that stress different
+feedback structures:
+
+- **OpenClaw-style personal-agent adaptation** — routed offline training
+  recovers most of the personalization gain of the OpenClawRL-style online
+  protocol while training from static artifacts.
+- **tau3-bench mixed tool-user trajectories** — feedback-instance routing
+  inside single trajectories yields the best overall task success among the
+  compared offline and protocol baselines.
+- **SWE-bench Lite delayed-outcome tasks** — HPR routes nearly all delayed
+  feedback to the scalar branch and remains competitive at the delayed-outcome
+  boundary.
+
+Full quantitative results, router diagnostics, and the offline-efficiency
+comparison are reported in the paper.
+
+## Citation
+
+The paper is under double-blind review. A BibTeX entry will be added upon
+publication.
