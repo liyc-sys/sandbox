@@ -1,0 +1,5 @@
+# Rebuilt benchmark data and vendored sources are not committed.
+data/raw/
+data/analysis/
+vendor/
+__pycache__/

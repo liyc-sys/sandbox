@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.DS_Store
+benchmarks/data/raw/
+benchmarks/data/analysis/
+benchmarks/vendor/

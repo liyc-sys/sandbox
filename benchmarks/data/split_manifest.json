@@ -1,0 +1,147 @@
+{
+  "created_at": "2026-05-20",
+  "datasets": {
+    "openclaw_gsm8k": {
+      "base_order": "GSM8K original dataset order",
+      "dev": {
+        "count": 100,
+        "index_range": "1000-1099",
+        "purpose": "prompt, schema, and threshold checks"
+      },
+      "eval": {
+        "count": 219,
+        "index_range": "1100-1318",
+        "purpose": "held-out reporting"
+      },
+      "paper_diagnostic_protocol": {
+        "note": "The small personal-agent diagnostic preserves the OpenClaw-RL interaction protocol; the larger index split records the planned full-data layout.",
+        "student_interactions": 36,
+        "teacher_interactions": 24,
+        "update_cadence": "every 16 scored turns"
+      },
+      "source": "OpenClaw-RL personal-agent protocol over GSM8K",
+      "split_rule": "Use the original GSM8K order: indices 0-999 for train, 1000-1099 for dev, and 1100-1318 for held-out eval.",
+      "status": "protocol_specified_not_materialized_in_this_tree",
+      "train": {
+        "count": 1000,
+        "index_range": "0-999",
+        "purpose": "offline adaptation pool if full OpenClaw-style training is run"
+      }
+    },
+    "swe_bench_lite": {
+      "all": {
+        "count": 300,
+        "file": "data/raw/swe_bench_lite/swe_bench_lite_test.jsonl"
+      },
+      "dev": {
+        "count": 15,
+        "file": "data/raw/swe_bench_lite/swe_bench_lite_dev.jsonl",
+        "purpose": "prompt and schema checks"
+      },
+      "eval": {
+        "count": 240,
+        "file": "data/raw/swe_bench_lite/swe_bench_lite_eval.jsonl",
+        "purpose": "reported held-out evaluation"
+      },
+      "hf_split": "test",
+      "leakage_control": "Train, dev, and reported-eval instance ids are disjoint. The split is for this study and is not a leaderboard submission split.",
+      "source": "princeton-nlp/SWE-bench_Lite",
+      "split_rule": "Sort by instance_id; first 15 issues are dev, next 45 issues are train, remaining 240 issues are reported eval.",
+      "total_issues": 300,
+      "train": {
+        "count": 45,
+        "file": "data/raw/swe_bench_lite/swe_bench_lite_train.jsonl",
+        "purpose": "adaptation updates"
+      }
+    },
+    "tau3_bench": {
+      "domains": {
+        "airline": {
+          "dev": {
+            "count": 4,
+            "file": "data/raw/tau3_bench/airline_dev_tasks.jsonl"
+          },
+          "reported_test": {
+            "count": 20,
+            "file": "data/raw/tau3_bench/airline_reported_test_tasks.jsonl"
+          },
+          "train_update": {
+            "count": 26,
+            "file": "data/raw/tau3_bench/airline_train_update_tasks.jsonl"
+          }
+        },
+        "retail": {
+          "dev": {
+            "count": 11,
+            "file": "data/raw/tau3_bench/retail_dev_tasks.jsonl"
+          },
+          "reported_test": {
+            "count": 29,
+            "excluded_tasks": 11,
+            "file": "data/raw/tau3_bench/retail_reported_test_tasks.jsonl",
+            "official_count": 40
+          },
+          "train_update": {
+            "count": 63,
+            "file": "data/raw/tau3_bench/retail_train_update_tasks.jsonl"
+          }
+        },
+        "telecom": {
+          "dev": {
+            "count": 11,
+            "file": "data/raw/tau3_bench/telecom_dev_tasks.jsonl"
+          },
+          "reported_test": {
+            "count": 40,
+            "file": "data/raw/tau3_bench/telecom_reported_test_tasks.jsonl"
+          },
+          "train_update": {
+            "count": 63,
+            "file": "data/raw/tau3_bench/telecom_train_update_tasks.jsonl"
+          }
+        }
+      },
+      "leakage_control": "Train-update, dev, and reported-test task ids are disjoint within each domain. Train and eval are in-distribution but no reported-test feedback is used for updates.",
+      "main_domains": [
+        "airline",
+        "retail",
+        "telecom"
+      ],
+      "optional_diagnostic": {
+        "banking_knowledge": {
+          "dev": {
+            "count": 15,
+            "file": "data/raw/tau3_bench/banking_knowledge_dev_tasks.jsonl"
+          },
+          "purpose": "knowledge-heavy diagnostic only, not part of the main mixed-feedback benchmark",
+          "test": {
+            "count": 22,
+            "file": "data/raw/tau3_bench/banking_knowledge_test_tasks.jsonl"
+          },
+          "train": {
+            "count": 60,
+            "file": "data/raw/tau3_bench/banking_knowledge_train_tasks.jsonl"
+          }
+        }
+      },
+      "reported_eval_policy": {
+        "excluded_tasks": 11,
+        "manifest": "data/splits/tau3_reported_test_clean89_manifest.json",
+        "note": "All reported tau3 comparisons use the fixed 89-task evaluation set defined in data/splits/tau3_reported_test_clean89_manifest.json; the included and excluded task ids are listed there and are identical for all compared methods.",
+        "official_reported_test_tasks": 100,
+        "reported_clean_completed_tasks": 89
+      },
+      "source_repo": "vendor/tau2-bench",
+      "split_rule": "For each main text domain, reserve the first 15% of official train task ids after string sort as dev; use the remaining official train ids for train updates; use the official test split as reported test.",
+      "totals": {
+        "dev_tasks": 26,
+        "official_reported_test_tasks": 100,
+        "reported_test_tasks": 89,
+        "train_update_tasks": 152
+      },
+      "version_label": "tau3-bench via tau2-bench repository"
+    }
+  },
+  "purpose": "Canonical split manifest for the HPR routed-feedback experiments.",
+  "schema_version": 1
+}
